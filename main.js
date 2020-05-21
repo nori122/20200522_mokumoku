@@ -51,6 +51,19 @@ const uiConfig = {
 
 const ui = new firebaseui.auth.AuthUI(firebase.auth());
 
+
+// // 日時をいい感じの形式にする関数
+// function convertFromFirestoreTimestampToDatetime(timestamp) {
+//     const _d = timestamp ? new Date(timestamp * 1000) : new Date();
+//     const Y = _d.getFullYear();
+//     const m = (_d.getMonth() + 1).toString().padStart(2, '0');
+//     const d = _d.getDate().toString().padStart(2, '0');
+//     const H = _d.getHours().toString().padStart(2, '0');
+//     const i = _d.getMinutes().toString().padStart(2, '0');
+//     const s = _d.getSeconds().toString().padStart(2, '0');
+//     return `${Y}/${m}/${d} ${H}:${i}:${s}`;
+// }
+
 //RSVPボタンをlisten
 startRsvpButton.addEventListener("click",
     () => {
@@ -71,7 +84,7 @@ firebase.auth().onAuthStateChanged((user) => {
         guestbookContainer.style.display = "block";
 
         //guestbookのコレクションをSubscribe
-        subscribeGuestbook();
+        subscribeGuestbook(user);
         //attendeesコレクションをsubscribe
         subscribeCurrentRSVP(user);
     } else {
@@ -80,7 +93,7 @@ firebase.auth().onAuthStateChanged((user) => {
         guestbookContainer.style.display = "none";
 
         //guesbookのコレクションをunsubscribe
-        unsubscribeGuestbook();
+        unsubscribeGuestbook(user);
         //attendeesコレクションをunsubscribe
         unsubscribeCurrentRSVP(user);
     }
@@ -113,9 +126,15 @@ function subscribeGuestbook() {
             guestbook.innerHTML = "";
             //databaseのdocumentsをループする
             snaps.forEach((doc) => {
-                //それぞれのドキュメントに対しHTML要素をつ食って、チャットに追加
+                //それぞれのドキュメントに対しHTML要素をつくって、チャットに追加
                 const entry = document.createElement("p");
-                entry.textContent = doc.data().name + " : " + doc.data().text;
+                entry.textContent =
+                    doc.data().name
+                    + " : "
+                    + doc.data().text
+                    + " ("
+                    + doc.data().timestamp
+                    + ") ";
                 guestbook.appendChild(entry);
             });
         });
@@ -172,6 +191,7 @@ function subscribeCurrentRSVP(user) {
                 if (attendingResponse) {
                     rsvpYes.className = "clicked";
                     rsvpNo.className = "";
+                    console.log(rsvpYes.className);
                 }
                 else {
                     rsvpYes.className = "";
