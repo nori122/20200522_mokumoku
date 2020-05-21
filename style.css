@@ -7,8 +7,9 @@
     position: absolute;
     top: 0;
     left: 0;
-    margin: 30px;
-    height: 90vh;
+    margin: 20px;
+    height: 95vh;
+    width: 90vw;
     background-color: rgb(255, 255, 242,0.85);
     overflow:auto;
 }
@@ -174,6 +175,7 @@
 #event-details-container h1{
     opacity: 0;
     text-align: center;
+    margin-bottom: 60px;
 }
 
 #event-details-container span{
@@ -181,4 +183,17 @@
     top: 10px;
     left: 10px;
     opacity: 0.3; 
+}
+
+#description-container{
+        margin: 20px 0;
+}
+#description-container h2{
+        font-size: 18px;
+}
+#description-container p{
+        font-size: 31px;
+        display: inline;
+        margin: -6px auto 0 0;
+        background: linear-gradient(transparent 60%, #ffff66 60%);
 }
