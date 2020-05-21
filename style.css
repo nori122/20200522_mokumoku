@@ -1,7 +1,27 @@
-html{
+.app{
+    position: relative;
+    overflow: hidden;
+}
+
+.wrapper{
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 30px;
+    height: 90vh;
+    background-color: rgb(255, 255, 242,0.85);
+    overflow:auto;
+}
+#app img{
+    background-size: cover;
+    height: 100vh;
+    background-attachment: fixed;
+}
+
+/* html{
     background-color: rgb(255, 255, 242);
 
-}
+} */
 @media all and (min-width:1200px) {
             #app {
                 max-width: 1000px;
@@ -78,6 +98,7 @@ html{
         }
 
         h2 {
+            margin-top: 40px;
             margin-bottom: 0px;
         }
 
@@ -96,9 +117,18 @@ html{
             font-size: 14px;
         }
 
+        .guestbook{
+            padding: 0.5em 1em;
+            margin: 2em 0;
+            color: #5d627b;
+            background: white;
+            border-top: solid 5px #5d627b;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.22);
+        }
+
         input {
             border: none;
-            border-bottom: 1px solid rgba(0, 0, 0, .12);
+            border-bottom: 1px dotted #757575;
             font-size: 14px;
             padding: 4px 0;
             background: 0 0;
@@ -139,3 +169,16 @@ html{
             text-transform: uppercase;
             vertical-align: middle;
         }
+
+
+#event-details-container h1{
+    opacity: 0;
+    text-align: center;
+}
+
+#event-details-container span{
+    position: relative;
+    top: 10px;
+    left: 10px;
+    opacity: 0.3; 
+}

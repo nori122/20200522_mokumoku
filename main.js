@@ -1,4 +1,7 @@
-
+//アニメーション
+$(document).ready(function () {
+    $('#event-details-container h1').textyle();
+});
 
 
 

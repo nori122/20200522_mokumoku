@@ -22,51 +22,58 @@
 </head>
 
 <body>
-    <div id="app">
+    <div id="app" class="app">
         <img src="img/gs.jpg" />
+        <div class="wrapper">
+            <section id="event-details-container">
+                <span>
+                    <h1>Moku Moku</h1>
+                </span>
+                <section id="description-container">
+                    <h2>第6回課題</h2>
+                    <p>Firebaseを使おう</p>
+                    <br>
+                </section>
 
-        <section id="event-details-container">
-            <h1>Moku Moku</h1>
+                <p><i class="material-icons">calendar_today</i> 5/22 (金)</p>
+                <p><i class="material-icons">location_city</i> 大名</p>
+                <button id="startRsvp">ログイン</button>
+            </section>
+            <hr>
 
-            <p><i class="material-icons">calendar_today</i> 5/22 (金)</p>
-            <p><i class="material-icons">location_city</i> 大名</p>
-            <button id="startRsvp">ログイン</button>
-        </section>
-        <hr>
+            <section id="firebaseui-auth-container"></section>
 
-        <section id="firebaseui-auth-container"></section>
 
-        <section id="description-container">
-            <h2>第6回課題</h2>
-            <p>なんでもいいからFirebaseを使う</p>
-            <p id="number-attending"></p>
-        </section>
 
-        <section id="guestbook-container">
-            <h2>参加する？</h2>
-            <button id="rsvp-yes">はい</button>
-            <button id="rsvp-no">やめとく</button>
 
-            <h2>ひとこと</h2>
-            <form id="leave-message">
-                <label for="">今日の意気込みをどうぞ：</label>
-                <input type="text" id="message">
-                <button type="submit">
-                    <i class="material-icons">send</i>
-                    <span>送信<span>
-                </button>
-            </form>
+            <section id="guestbook-container">
+                <h2>参加する？</h2>
+                <button id="rsvp-yes">はい</button>
+                <button id="rsvp-no">やめとく</button>
+                <p id="number-attending"></p>
 
-            <section id="guestbook"></section>
+                <h2>一言</h2>
+                <form id="leave-message">
+                    <label for="">ご自由にどうぞ：</label>
+                    <input type="text" id="message" placeholder="ここに入力" autocomplete="off">
+                    <button type="submit">
+                        <i class="material-icons">send</i>
+                        <span>送信<span>
+                    </button>
+                </form>
+
+                <section id="guestbook" class="guestbook"></section>
+        </div>
 
 
         </section>
 
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
     <!-- The core Firebase JS SDK is always required and must be listed first -->
     <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase.js"></script>
-
+    <script src="Textyle.js-master/textyle.min.js"></script>
     <!-- TODO: Add SDKs for Firebase products that you want to use
          https://firebase.google.com/docs/web/setup#available-libraries -->
     <script src="main.js"></script>
