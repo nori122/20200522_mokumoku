@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang='ja'>
+
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+
+    <!-- fierbaseUIを使用 -->
+    <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+
+
+    <!-- google font -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700|Roboto:300,400,700&display=swap"
+        rel="stylesheet">
+    <!-- アイコン -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel='stylesheet' href='style.css'>
+
+    <title>mokumoku</title>
+
+</head>
+
+<body>
+    <div id="app">
+        <img src="img/gs.jpg" />
+
+        <section id="event-details-container">
+            <h1>Moku Moku</h1>
+
+            <p><i class="material-icons">calendar_today</i> 5/22 (金)</p>
+            <p><i class="material-icons">location_city</i> 大名</p>
+            <button id="startRsvp">ログイン</button>
+        </section>
+        <hr>
+
+        <section id="firebaseui-auth-container"></section>
+
+        <section id="description-container">
+            <h2>第6回課題</h2>
+            <p>なんでもいいからFirebaseを使う</p>
+            <p id="number-attending"></p>
+        </section>
+
+        <section id="guestbook-container">
+            <h2>参加する？</h2>
+            <button id="rsvp-yes">はい</button>
+            <button id="rsvp-no">やめとく</button>
+
+            <h2>ひとこと</h2>
+            <form id="leave-message">
+                <label for="">今日の意気込みをどうぞ：</label>
+                <input type="text" id="message">
+                <button type="submit">
+                    <i class="material-icons">send</i>
+                    <span>送信<span>
+                </button>
+            </form>
+
+            <section id="guestbook"></section>
+
+
+        </section>
+
+    </div>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.14.4/firebase.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+         https://firebase.google.com/docs/web/setup#available-libraries -->
+
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyCcWfxYb5RdCd05M4nJIYawfmel_JJruHk",
+            authDomain: "mokumoku-e04f4.firebaseapp.com",
+            databaseURL: "https://mokumoku-e04f4.firebaseio.com",
+            projectId: "mokumoku-e04f4",
+            storageBucket: "mokumoku-e04f4.appspot.com",
+            messagingSenderId: "833152582287",
+            appId: "1:833152582287:web:c794daa444dc64e75166fa"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+
+
+
+
+    <script>
+        // Document elements
+        const startRsvpButton = document.getElementById('startRsvp');
+        const guestbookContainer = document.getElementById('guestbook-container');
+
+        const form = document.getElementById('leave-message');
+        const input = document.getElementById('message');
+        const guestbook = document.getElementById('guestbook');
+        const numberAttending = document.getElementById('number-attending');
+        const rsvpYes = document.getElementById('rsvp-yes');
+        const rsvpNo = document.getElementById('rsvp-no');
+
+        var rsvpListener = null;
+        var guestbookListener = null;
+
+
+        // FirebaseUI config
+        const uiConfig = {
+            credentialHelper: firebaseui.auth.CredentialHelper.NONE,
+            signInOptions: [
+                // Email / Password Provider.
+                firebase.auth.EmailAuthProvider.PROVIDER_ID
+            ],
+            callbacks: {
+                signInSuccessWithAuthResult: function (authResult, redirectUrl) {
+                    // Handle sign-in.
+                    // Return false to avoid redirect.
+                    return false;
+                }
+            }
+        };
+
+        const ui = new firebaseui.auth.AuthUI(firebase.auth());
+
+        //RSVPボタンをlisten
+        startRsvpButton.addEventListener("click",
+            () => {
+                if (firebase.auth().currentUser) {
+                    //userがサインインしてたら; userにサインアウトさせる
+                    firebase.auth().signOut();
+                } else {
+                    //誰もuserがサインインしていなければ； userにサインインさせる
+                    ui.start("#firebaseui-auth-container", uiConfig);
+                }
+            });
+
+        // 現在の認証状況をlisten
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                startRsvpButton.textContent = "ログアウト";
+                //ログイン済userにはguestbookを見せる
+                guestbookContainer.style.display = "block";
+
+                //guestbookのコレクションをSubscribe
+                subscribeGuestbook();
+                //attendeesコレクションをsubscribe
+                subscribeCurrentRSVP(user);
+            } else {
+                startRsvpButton.textContent = "参加する？"
+                //ログインしてないuserにはguestbookを隠す
+                guestbookContainer.style.display = "none";
+
+                //guesbookのコレクションをunsubscribe
+                unsubscribeGuestbook();
+                //attendeesコレクションをunsubscribe
+                unsubscribeCurrentRSVP(user);
+            }
+        });
+
+        //送信フォームをlisten
+        form.addEventListener("submit", (e) => {
+            //デフォルトフォームのリダイレクトを防ぐ
+            e.preventDefault();
+            //新しいメッセージを"guestbook"コレクションに追加
+            firebase.firestore().collection("guestbook").add({
+                text: input.value,
+                timestamp: Date.now(),
+                name: firebase.auth().currentUser.displayName,
+                userId: firebase.auth().currentUser.uid
+            })
+            //メッセージフィールドをからに
+            input.value = "";
+            //リダイレクトを防ぐためにfalseを返す
+            return false;
+        })
+
+        //guestbookの更新をlisten
+        function subscribeGuestbook() {
+            //メッセージに対するqueryを作成
+            guestbookListener = firebase.firestore().collection("guestbook")
+                .orderBy('timestamp', 'desc')
+                .onSnapshot((snaps) => {
+                    //ページをリセット
+                    guestbook.innerHTML = "";
+                    //databaseのdocumentsをループする
+                    snaps.forEach((doc) => {
+                        //それぞれのドキュメントに対しHTML要素をつ食って、チャットに追加
+                        const entry = document.createElement("p");
+                        entry.textContent = doc.data().name + " : " + doc.data().text;
+                        guestbook.appendChild(entry);
+                    });
+                });
+        };
+
+        // guestbookの更新Listenしない
+        function unsubscribeGuestbook() {
+            if (guestbookListener != null) {
+                guestbookListener();
+                guestbookListner = null;
+            }
+        }
+
+        //RSVPの回答をListen
+        rsvpYes.onclick = () => {
+            //attendeesコレクションから、userのドキュメントを取得
+            const userDoc = firebase.firestore().collection('attendees').doc(firebase.auth().currentUser.uid);
+
+            //If RSVPがYesなら、attendingフィールドにtrueとかく
+            userDoc.set({
+                attending: true
+            }).catch(console.error)
+        }
+
+        rsvpNo.onclick = () => {
+            //attendeesコレクションから、userのドキュメントを取得
+            const userDoc = firebase.firestore().collection('attendees').doc(firebase.auth().currentUser.uid);
+
+            //If RSVPがNoなら、attendingフィールドにfalseとかく
+            userDoc.set({
+                attending: false
+            }).catch(console.error)
+        }
+
+        //attendee list をlisten
+        firebase.firestore()
+            .collection('attendees')
+            .where("attending", "==", true)
+            .onSnapshot(snap => {
+                const newAttendeeCount = snap.docs.length;
+
+                numberAttending.innerHTML = '参加予定 : ' + newAttendeeCount + '人';
+            })
+
+        function subscribeCurrentRSVP(user) {
+            rsvpListener = firebase.firestore()
+                .collection('attendees')
+                .doc(user.uid)
+                .onSnapshot((doc) => {
+                    if (doc && doc.data()) {
+                        const attendingResponse = doc.data().attending;
+
+                        //cssのクラスを更新
+                        if (attendingResponse) {
+                            rsvpYes.className = "clicked";
+                            rsvpNo.className = "";
+                        }
+                        else {
+                            rsvpYes.className = "";
+                            rsvpNo.className = "clicked";
+                        }
+                    }
+                });
+        }
+
+        function unsubscribeCurrentRSVP() {
+            if (rsvpListener != null) {
+                rsvpListener();
+                rsvpListener = null;
+            }
+            rsvpYes.className = "";
+            rsvpNo.className = "";
+        }
+
+    </script>
+</body>
+
+</html>
